@@ -148,7 +148,7 @@ char	*ft_strdup(const char *s1)
 char	*ft_strchr(const char *string, int searchedChar)
 {
 	while (*string)
-		if (*string++ == (unsigned char)searchedChar)
+		if (*string++ == (unsigned castreeshar)searchedChar)
 			return ((char *)--string);
 	if (searchedChar == '\0')
 		return ((char *)string);
@@ -452,6 +452,7 @@ int main(int ac, char *av[], char *envp[])
     char *input = "echo \"$\"\"T\"\"E\"\"R\"\"M\" $TERM$TERM$TERM$TERM$TERM$TERM";
     t_lst	*chunks = NULL;
 	input = expand(input, false);
+
 	printf("%s\n", input);
 	while(1);
     return 0;
