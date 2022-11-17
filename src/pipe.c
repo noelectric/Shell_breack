@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: yimzaoua <yimzaoua@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/10 19:38:47 by adaifi            #+#    #+#             */
-/*   Updated: 2022/11/17 00:35:06 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/17 04:16:28 by yimzaoua         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,7 @@ void	execute(char **cmd, t_env **env, t_fds *fds)
 
 	j = 0;
 	var.id = 1;
+	signal(SIGINT, SIG_IGN);
 	var.cpid = fork();
 	if (var.cpid < 0)
 		return (var.exit_status = 1, ft_putendl_fd("fork error", 2));
@@ -114,6 +115,7 @@ void	execute(char **cmd, t_env **env, t_fds *fds)
 		}
 		ft_free_2d(envp);
 	}
+	signal(SIGINT, signal_handler);
 }
 
 void	execute_one_cmd(char **cmd, t_env **env)
@@ -123,6 +125,7 @@ void	execute_one_cmd(char **cmd, t_env **env)
 
 	var.id = 1;
 	stat = 0;
+	signal(SIGINT, SIG_IGN);
 	var.cpid = fork();
 	if (var.cpid == 0)
 	{
@@ -138,6 +141,7 @@ void	execute_one_cmd(char **cmd, t_env **env)
 	}
 	wait(&stat);
 	var.exit_status = WEXITSTATUS(stat);
+	signal(SIGINT, signal_handler);
 }
 
 void	execute_pipe(t_env *env, t_list *arg, t_fds *fds, int i)

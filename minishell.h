@@ -147,4 +147,5 @@ void	export_join(t_env **env, char *key, char *value);
 void	ft_sort_env(t_env **env);
 int		check_upper(char *str);
 void	ft_free_2d(char **ptr);
+void	signal_handler(int sig);
 #endif

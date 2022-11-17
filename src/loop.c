@@ -45,7 +45,7 @@ bool   set_rl(char *input, char *output, int fd, bool nl)
 	if (nl)
 	{
 		rl_on_new_line();
-		// rl_replace_line("", 0);
+		rl_replace_line("", 0);
 		rl_redisplay();
 	}
 	return (true);
