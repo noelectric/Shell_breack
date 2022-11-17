@@ -1,19 +1,25 @@
-#include "../include/minishell.h"
+#include "../minishell.h"
 
 int	check_ast(t_as *ast)
 {
+	t_as	*pre;
+
+	pre = ast->right;
 	if (ast->type == PIPE)
 	{
-		if (ast->left == NULL || ast->right == NULL)
+		if ((ast->left == NULL || ast->right == NULL))
 			return (0);
+		if (ast->right->type == PIPE && pre->right == NULL)
+			return 0;
 	}
 	if (ast->type == RD)
 	{
-		if (ast->left == NULL)
+		if (ast->left == NULL || (pre && pre->type == RD))
 			return (0);
 	}
-	check_ast(ast->left);
-	check_ast(ast->right);
+	if (ast->left != NULL && ast->right != NULL)
+		if (!check_ast(ast->left) || !check_ast(ast->right))
+			return 0;
 	return (1);
 }
 
@@ -22,11 +28,11 @@ void	free_ast(t_as *ast)
 	t_as	*tree;
 
 	tree = ast;
-	free(ast);
-	if (ast->right)
+	if (tree->right)
 		free_ast(tree->right);
-	if (ast->left)
+	if (tree->left)
 		free_ast(tree->left);
+	free(ast);
 }
 
 t_as	*d_add_redir_pipe(t_as *ast, t_as *node)
@@ -95,11 +101,13 @@ t_as	*d_new_node(char *str)
 	return (ast);
 }
 
-t_as	*ast_fill(t_lst *lst, t_as *syntax)
+t_as	*ast_fill(t_list *lst, t_as *syntax)
 {
 	t_as	*st;
 
 	st = NULL;
+	if (lst == NULL)
+		return (NULL);
 	while (lst)
 	{
 		syntax = d_new_node(lst->content);

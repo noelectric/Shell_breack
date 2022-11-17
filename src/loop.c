@@ -1,60 +1,90 @@
-#include "../include/minishell.h"
+#include "../minishell.h"
 
-bool    quotes(char *input)
+void	ast_print(t_as *ast)
 {
-    while (*input)
-    {
-        if (*input == '\"')
-            input = ft_strchr(input + 1, '\"');
-        if (*input == NULL)
-            return (false);
-        if (*input == '\'')
-            input = ft_strchr(input + 1, '\'');
-        if (*input == NULL)
-            return (false);
-        input++;
-    }
-    return (true);
+	printf("root : %s\n", ast->cmd);
+	if (ast->left)
+	{
+		printf("left of : %s\n", ast->cmd);
+		ast_print(ast->left);
+	}
+	if (ast->right)
+	{
+		printf("right of : %s\n\n", ast->cmd);
+		ast_print(ast->right);
+	}
+}
+
+int	quotes(char *cmd)
+{
+	while (*cmd)
+	{
+		if (*cmd == '\"')
+			cmd = ft_strchr(cmd + 1, '\"');
+		if (cmd == NULL)
+			return (0);
+		if (*cmd == '\'')
+			cmd = ft_strchr(cmd + 1, '\'');
+		if (cmd == NULL)
+			return (0);
+		++cmd;
+	}
+	return (1);
 }
 
 bool   set_rl(char *input, char *output, int fd, bool nl)
 {
     if (input != NULL)
 	{
-		ft_putstr(input, fd);
-		ft_putstr(": ", fd);
+		ft_putstr_fd(input, fd);
+		ft_putstr_fd(": ", fd);
 	}
 	if (output != NULL)
-		ft_putstr(output, fd);
-	ft_putendl("", fd);
+		ft_putstr_fd(output, fd);
+	ft_putendl_fd("", fd);
 	if (nl)
 	{
 		rl_on_new_line();
-		rl_replace_line("", 0);
+		// rl_replace_line("", 0);
 		rl_redisplay();
 	}
 	return (true);
-} 
+}
 
-void    loop(char *input, t_lst *chunks, t_as *syntax, t_lst *envmap)
+void    loop(char *input, t_list *chunks, t_as *syntax, t_env *envmap)
 {
-    while (1)
+	t_fds	fd;
+
+	while (1)
     {
-        ft_free((void **)&input);
-        input = readline("SHELL_BREACK > ");
-        if (!input)
-        {
-            ft_putendl("exit", STDOUT_FILENO);
-            exit(0);
-        }
+		chunks = NULL;
+		syntax = NULL;
+        input = readline("SHELL_BREAK > ");
+		if (!input)
+		{
+			write(1, "exit\n", 5);
+			exit(0);
+		}
+        if (!*input && set_rl(input, "", STDERR_FILENO, false))
+			continue ;
         add_history(input);
-        /* need check value of quotes */
         if (!quotes(input) && set_rl(input, "Quotes not paired", STDERR_FILENO, false))
             continue;
         input = expand(input, envmap, false);
-        /* need check value of input */
         tokenizer(input, &chunks);
-        /* need check value of chunks */
         syntax = ast_fill(chunks, syntax);
-    }
+        if (syntax && (!check_ast(syntax) && set_rl(input, "Syntax error", STDERR_FILENO, false)))
+		{
+			free_ast(syntax);
+			ft_lstclear(&chunks, (void *)free);
+            continue ;
+		}
+		// ast_print(syntax);
+        check_cmd(&envmap, chunks, &fd);
+		free(input);
+		if (syntax)
+			free_ast(syntax);
+		if (chunks)
+			ft_lstclear(&chunks, (void *)free);
+	}
 }

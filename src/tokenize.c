@@ -1,9 +1,9 @@
-# include "../include/minishell.h"
+# include "../minishell.h"
 
-char	*tokenize_internal(char *input, char *begin, char *end, t_lst **chunks)
+char	*tokenize_internal(char *input, char *begin, char *end, t_list **chunks)
 {
 	char	*token;
-	t_lst	*temp;
+	t_list	*temp;
 
 	token = ft_substr(input, begin - input, end - begin + 1);
 	temp = ft_lstnew(token);
@@ -11,7 +11,7 @@ char	*tokenize_internal(char *input, char *begin, char *end, t_lst **chunks)
 	return (end + 1);
 }
 
-void	tokenizer(char *input, t_lst **chunks)
+void	tokenizer(char *input, t_list **chunks)
 {
 	char	*begin;
 	char	*end;
@@ -19,14 +19,14 @@ void	tokenizer(char *input, t_lst **chunks)
 	begin = input;
 	while (*begin)
 	{
-		while (!ft_isspace)
+		while (*begin == ' ')
 			++begin;
 		end = begin;
 		while (*end && !ft_strchr(" ><|", *begin))
 		{
 			if (ft_strchr("\'\"", *end))
 				end = ft_strchr(end + 1, *end);
-			if (ft_strchr("><|", *(end + 1)))
+			if (ft_strchr(" ><|", *(end + 1)))
 				break ;
 			++end;
 		}

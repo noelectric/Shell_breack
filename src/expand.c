@@ -1,15 +1,15 @@
-#include "../include/minishell.h"
+#include "../minishell.h"
 
 char	*getvalue(char *key, t_env *envmap)
 {
 	t_env	*tmp;
-	char	value;
+	char	*value;
 
 	tmp = envmap;
 	value = NULL;
 	while (tmp)
 	{
-		if (ft_strncmp(tmp->key, key, ft_strlen(key)))
+		if (!ft_strcmp(tmp->key, key))
 		{
 			value = tmp->value;
 			break;
@@ -24,14 +24,14 @@ char	*expand_last(char *it)
 	if (*it && ft_strchr("$?", *it))
 		++it;
 	else
-		while (*it && !ft_strchr(" ><\'\"|?$", *it))
+		while (*it && ft_isalnum(*it))
 			++it;
 	return (it);
 }
 
-void	expand_space(char *value, t_lst **brace)
+void	expand_space(char *value, t_list **brace)
 {
-	t_lst	*append;
+	t_list	*append;
 	char	*search;
 
 	*brace = NULL;
@@ -44,8 +44,8 @@ void	expand_space(char *value, t_lst **brace)
 			break ;
 		*search++ = '\0';
 		append = ft_lstnew(ft_strdup(value));
-        if (append != NULL && append->content != NULL)
-            exit (0); 
+        // if (append != NULL && append->content != NULL)
+        //     exit(0);
 		value = search;
 		ft_lstadd_back(brace, append);
 	}
@@ -57,11 +57,11 @@ void	expand_space(char *value, t_lst **brace)
 	ft_lstadd_back(brace, append);
 }
 
-char	*expand_brace(t_lst *brace)
+char	*expand_brace(t_list *brace)
 {
 	bool	ret;
 	char	*middle;
-	t_lst	*origin;
+	t_list	*origin;
 
 	middle = NULL;
 	origin = brace;
@@ -72,13 +72,13 @@ char	*expand_brace(t_lst *brace)
 	{
 		brace = brace->next;
 		ret = ft_strappend(&middle, " ");
-		if (ret == false)
-            exit (0); 
+		// if (ret == false)
+        //     exit (0);
 		ret = ft_strappend(&middle, (char *)(brace->content));
-		if (ret == false)
-            exit (0); 
+		// if (ret == false)
+        //     exit (0);
 	}
-	ft_lstclear(&origin, (void **)ft_free);
+	ft_lstclear(&origin, (void *)free);
 	return (middle);
 }
 
@@ -86,7 +86,7 @@ char	*expand_middle(char *input, char *it, char *last, t_env *envmap)
 {
 	char	*key;
 	char	*value;
-	t_lst	*brace;
+	t_list	*brace;
 
 	if (last - it == 1)
 		return (ft_strdup("$"));
@@ -105,29 +105,46 @@ char	*expand_middle(char *input, char *it, char *last, t_env *envmap)
 	return (expand_brace(brace));
 }
 
-char *removeChar(char *str)
+char    quotes_type(char *arg)
 {
-    int		i;
-	int		j;
-    int		len;
-    char	*tmp;
+    char    key;
+    char    *tmp;
+    int        i;
 
-	len = strlen(str);
-    tmp = ft_strdup(str);
-	i = 0;
-    while (i < len)
-	{
-		if (tmp[i] == '\'' || tmp[i] == '\"')
-		{
-			j = i;
-			while (j < len)
-				tmp[j++] = tmp[j+1];
-			len--;
-			i--;
-		}
-		i++;
-	}
-    return(tmp);
+    tmp = arg;
+    i = 0;
+    while (tmp[i])
+    {
+        if (tmp[i] == '\"' || tmp[i] == '\'')
+        {
+            if (tmp[i] == '\"')
+                key = 34;
+            else
+                key = 39;
+        }
+        i++;
+    }
+    return (key);
+}
+
+char    *removeChar(char *arg)
+{
+    char    *first;
+    char    *middle;
+    char    *fermer;
+    char    *end;
+    char    key;
+
+    middle = NULL;
+    end = NULL;
+    key = quotes_type(arg);
+    end = ft_strchr(ft_strchr(arg, key) + 1, key);
+    first = ft_substr(arg, 0, ft_strchr(arg, key) - arg);
+    middle = ft_substr(arg, ft_strchr(arg, key) - arg + 1, \
+            end - ft_strchr(arg, key) - 1);
+    fermer = ft_strjoin(first, middle);
+    fermer = ft_strjoin(fermer, end + 1);
+    return (fermer);
 }
 
 char	*expand_internal(char *input, char *it, bool d_quote, t_env *envmap)
@@ -149,12 +166,11 @@ char	*expand_internal(char *input, char *it, bool d_quote, t_env *envmap)
 	input = ft_strjoin(former, latter);
 	ft_free((void **)(&latter));
 	ft_free((void **)(&former));
-	input = removeChar(input);
 	return (input);
 }
 char	*expand(char *input, t_env *envmap, bool d_quote)
 {
-	char	*iter;    
+	char	*iter;
 
 	if (input == NULL)
 		return (NULL);
