@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_listnew.c                                        :+:      :+:    :+:   */
+/*   ft_lstnew.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adaifi <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/11/11 00:21:03 by adaifi            #+#    #+#             */
-/*   Updated: 2021/11/11 00:22:31 by adaifi           ###   ########.fr       */
+/*   Created: 2022/11/20 19:18:49 by adaifi            #+#    #+#             */
+/*   Updated: 2022/11/22 01:13:49 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ t_list	*ft_lstnew(void *content)
 
 	new = (t_list *)malloc(sizeof(t_list));
 	if (!new)
-		return (NULL);
+		return (printf("allocation failed"), exit(0), NULL);
 	new->content = content;
 	new->next = NULL;
 	return (new);

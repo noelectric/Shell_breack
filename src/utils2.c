@@ -6,34 +6,11 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/25 14:30:18 by adaifi            #+#    #+#             */
-/*   Updated: 2022/11/16 10:39:44 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/22 01:17:26 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
-
-void	ft_free_lst(t_list **head)
-{
-	t_list		*tmp;
-
-	while ((*head))
-	{
-		free((*head)->content);
-		tmp = (*head)->next;
-		free((*head));
-		(*head) = tmp;
-	}
-}
-
-void	ft_free_2d(char **ptr)
-{
-	int	i;
-
-	i = 0;
-	while (ptr[i])
-		free(ptr[i++]);
-	free(ptr);
-}
 
 t_env	*ft_lst_new1(char *key, char *value)
 {
@@ -41,7 +18,7 @@ t_env	*ft_lst_new1(char *key, char *value)
 
 	lst = (t_env *)malloc(sizeof(t_env));
 	if (!lst)
-		return (NULL);
+		return (printf("allocation failed"), exit(0), NULL);
 	lst->key = ft_strdup(key);
 	if (value)
 		lst->value = ft_strdup(value);
@@ -71,6 +48,7 @@ char	*get_keys(char *str, int c)
 	char	*h;
 	char	a;
 	int		j;
+	char	*key;
 
 	h = ft_strdup(str);
 	j = 0;
@@ -78,28 +56,26 @@ char	*get_keys(char *str, int c)
 	while (h[j] && h[j] != a)
 		j++;
 	if (h[j] + 1 == '\0')
+	{
+		free(h);
 		return (str);
+	}
 	else
 	{
-		h = ft_substr(str, 0, j);
-		return (h);
+		key = ft_substr(str, 0, j);
+		free(h);
+		return (key);
 	}
+	free(h);
 	return (str);
 }
 
 int	ft_multiple_check(char *arg)
 {
-	int		i;
-
-	i = 1;
-	while (arg[i])
-	{
-		if ((arg[0] == '>' || arg[0] == '|' || arg[0] == '<'))
-			return (2);
-		if (!ft_isalpha(arg[0]))
-			return (1);
-		i++;
-	}
+	if ((arg[0] == '>' || arg[0] == '|' || arg[0] == '<'))
+		return (2);
+	if (!ft_isalpha(arg[0]))
+		return (1);
 	return (0);
 }
 

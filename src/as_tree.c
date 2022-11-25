@@ -1,45 +1,38 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   as_tree.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/11/18 14:42:39 by adaifi            #+#    #+#             */
+/*   Updated: 2022/11/22 01:15:21 by adaifi           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../minishell.h"
 
 int	check_ast(t_as *ast)
 {
-	t_as	*pre;
-
-	pre = ast->right;
-	if (ast->type == PIPE)
+	if (ast == NULL)
+		return (1);
+	if (ast->type == PIPE || ast->type == RD)
 	{
-		if ((ast->left == NULL || ast->right == NULL))
-			return (0);
-		if (ast->right->type == PIPE && pre->right == NULL)
-			return 0;
-	}
-	if (ast->type == RD)
-	{
-		if (ast->left == NULL || (pre && pre->type == RD))
+		if (ast->left == NULL)
 			return (0);
 	}
-	if (ast->left != NULL && ast->right != NULL)
-		if (!check_ast(ast->left) || !check_ast(ast->right))
-			return 0;
+	if (!check_ast(ast->left))
+		return (0);
+	if (!check_ast(ast->right))
+		return (0);
 	return (1);
-}
-
-void	free_ast(t_as *ast)
-{
-	t_as	*tree;
-
-	tree = ast;
-	if (tree->right)
-		free_ast(tree->right);
-	if (tree->left)
-		free_ast(tree->left);
-	free(ast);
 }
 
 t_as	*d_add_redir_pipe(t_as *ast, t_as *node)
 {
 	if (ast->type == RD)
 	{
-		if (ast->right != NULL)
+		if (ast->left == NULL)
 			ast->left = d_add_node(ast->left, node);
 		else
 			ast->right = d_add_node(ast->right, node);
@@ -87,11 +80,11 @@ t_as	*d_new_node(char *str)
 
 	ast = (t_as *)malloc(sizeof(t_as));
 	if (ast == NULL)
-		return (NULL);
-	if (!ft_strncmp(str, ">", 2) || !ft_strncmp(str, ">>", 3)
-		|| !ft_strncmp(str, "<", 2) || !ft_strncmp(str, "<<", 3))
+		return (printf("allocation failed"), exit(0), NULL);
+	if (!ft_strcmp(str, ">") || !ft_strcmp(str, ">>")
+		|| !ft_strcmp(str, "<") || !ft_strcmp(str, "<<"))
 		ast->type = RD;
-	else if (!ft_strncmp(str, "|", 2))
+	else if (!ft_strcmp(str, "|"))
 			ast->type = PIPE;
 	else
 		ast->type = CMD;
@@ -111,6 +104,8 @@ t_as	*ast_fill(t_list *lst, t_as *syntax)
 	while (lst)
 	{
 		syntax = d_new_node(lst->content);
+		if (syntax == NULL)
+			return (NULL);
 		st = d_add_node(st, syntax);
 		lst = lst->next;
 	}

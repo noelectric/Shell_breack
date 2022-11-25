@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yimzaoua <yimzaoua@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/10 19:38:47 by adaifi            #+#    #+#             */
-/*   Updated: 2022/11/17 04:16:28 by yimzaoua         ###   ########.fr       */
+/*   Updated: 2022/11/21 23:06:04 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,12 +42,12 @@ void	content_handler(t_list **arg, t_env **env, t_fds *fds)
 	tmp_in = dup(0);
 	tmp_out = dup(1);
 	str = redirection_handler(arg, fds, str);
-	if (*str == '\0')
-		return (printf("command not found\n"), var.exit_status = 127, free(str));
 	dup2(tmp_in, STDIN_FILENO);
 	dup2(tmp_out, STDOUT_FILENO);
 	close(tmp_in);
 	close(tmp_out);
+	if (fds->in < 0 || fds->out < 0)
+		return (var.exit_status = 1, ft_putendl_fd("fd e5rror", 2));
 	execute_redir(tmp, env, fds, str);
 	free(str);
 }
@@ -55,19 +55,12 @@ void	content_handler(t_list **arg, t_env **env, t_fds *fds)
 void	execute_redir(t_list *arg, t_env **env, t_fds *fds, char *str)
 {
 	char	**cmd;
+	char	*tmp;
 	int		tmp_in;
 	int		tmp_out;
-	int		i;
 
-	i = 0;
-	if (fds->in < 0 || fds->out < 0)
-		return (var.exit_status = 1, ft_putendl_fd("fd e5rror", 2));
-	cmd = ft_split(str, ' ');
-	while (cmd[i])
-	{
-		cmd[i] = removeChar(cmd[i]);
-		i++;
-	}
+	tmp = removechar(str);
+	cmd = ft_split(tmp, ' ');
 	tmp_in = dup(0);
 	tmp_out = dup(1);
 	dup2(fds->in, STDIN_FILENO);
@@ -75,7 +68,7 @@ void	execute_redir(t_list *arg, t_env **env, t_fds *fds, char *str)
 	close(fds->in);
 	close(fds->out);
 	if (check_type(cmd[0]))
-		builting(env, arg);
+		builting(env, arg, cmd[0]);
 	else if (var.i == 0)
 		execute_one_cmd(cmd, env);
 	else
@@ -84,7 +77,7 @@ void	execute_redir(t_list *arg, t_env **env, t_fds *fds, char *str)
 	dup2(tmp_out, STDOUT_FILENO);
 	close(tmp_in);
 	close(tmp_out);
-	ft_free_2d(cmd);
+	return (free(tmp), ft_free_2d(cmd));
 }
 
 void	execute(char **cmd, t_env **env, t_fds *fds)
@@ -92,22 +85,18 @@ void	execute(char **cmd, t_env **env, t_fds *fds)
 	char	**envp;
 	int		j;
 
-	j = 0;
+	j = -1;
 	var.id = 1;
-	signal(SIGINT, SIG_IGN);
 	var.cpid = fork();
 	if (var.cpid < 0)
 		return (var.exit_status = 1, ft_putendl_fd("fork error", 2));
 	if (var.cpid == 0)
 	{
-		while (j <= var.i)
-		{
+		while (++j < var.i * 2)
 			close(fds->fd[j]);
-			j++;
-		}
 		envp = env_str(*env);
 		if (execve(get_path(cmd[0], env), cmd, envp) == -1
-			|| check_upper(cmd[0]) || !get_path(cmd[0], env))
+			|| check_upper(cmd[0]) || !get_path(cmd[0], env) || envp == NULL)
 		{
 			ft_free_2d(envp);
 			ft_free_2d(cmd);
@@ -115,7 +104,7 @@ void	execute(char **cmd, t_env **env, t_fds *fds)
 		}
 		ft_free_2d(envp);
 	}
-	signal(SIGINT, signal_handler);
+	signal(SIG_INT, signal_handler);
 }
 
 void	execute_one_cmd(char **cmd, t_env **env)
@@ -123,15 +112,14 @@ void	execute_one_cmd(char **cmd, t_env **env)
 	char	**envp;
 	int		stat;
 
-	var.id = 1;
 	stat = 0;
-	signal(SIGINT, SIG_IGN);
+	var.id = 1;
 	var.cpid = fork();
 	if (var.cpid == 0)
 	{
 		envp = env_str(*env);
 		if (execve(get_path(cmd[0], env), cmd, envp) == -1
-			|| check_upper(cmd[0]) || !get_path(cmd[0], env))
+			|| check_upper(cmd[0]) || !get_path(cmd[0], env) || envp == NULL)
 		{
 			ft_free_2d(envp);
 			ft_free_2d(cmd);
@@ -140,32 +128,6 @@ void	execute_one_cmd(char **cmd, t_env **env)
 		ft_free_2d(envp);
 	}
 	wait(&stat);
+	signal(SIG_INT, signal_handler);
 	var.exit_status = WEXITSTATUS(stat);
-	signal(SIGINT, signal_handler);
-}
-
-void	execute_pipe(t_env *env, t_list *arg, t_fds *fds, int i)
-{
-	int		j;
-	int		tmp_in;
-	int		tmp_out;
-
-	j = 0;
-	fds->fd = (int *)malloc((i * 2) * sizeof(int));
-	tmp_in = dup(0);
-	tmp_out = dup(1);
-	while (j < i * 2)
-	{
-		pipe(fds->fd + j);
-		j += 2;
-	}
-	i = i + 1;
-	pipe_handler(fds, arg, env, i);
-	dup2(tmp_in, STDIN_FILENO);
-	dup2(tmp_out, STDOUT_FILENO);
-	close(tmp_in);
-	close(tmp_out);
-	close(fds->in);
-	close(fds->out);
-	free(fds->fd);
 }

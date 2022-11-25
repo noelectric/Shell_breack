@@ -6,7 +6,7 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/11 01:18:22 by adaifi            #+#    #+#             */
-/*   Updated: 2021/11/26 03:21:26 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/22 01:14:41 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ char	*ft_strdup(const char *s1)
 
 	i = 0;
 	len = ft_strlen(s1);
-	cpy = malloc(len + 1);
+	cpy = (char *)malloc((len + 1) * sizeof(char));
 	if (!(cpy))
-		return (NULL);
+		return (printf("allocation failed"), exit(0), NULL);
 	while (i < (len + 1))
 	{
 		((unsigned char *)cpy)[i] = ((unsigned char *)s1)[i];

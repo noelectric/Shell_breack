@@ -6,7 +6,7 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/25 14:30:18 by adaifi            #+#    #+#             */
-/*   Updated: 2022/11/14 17:51:24 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/22 01:16:32 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ t_env	*ft_list_new1(char *key, char *value)
 
 	lst = (t_env *)malloc(sizeof(t_env));
 	if (!lst)
-		return (NULL);
+		return (printf("allocation failed"), exit(0), NULL);
 	lst->key = ft_strdup(key);
 	lst->value = ft_strdup(value);
 	lst->next = NULL;
@@ -40,4 +40,39 @@ void	ft_listadd_back_prime(t_env **lst, t_env *node)
 			head = head->next;
 		head->next = node;
 	}
+}
+
+void	free_ast(t_as *ast)
+{
+	t_as	*tree;
+
+	tree = ast;
+	if (tree->right)
+		free_ast(tree->right);
+	if (tree->left)
+		free_ast(tree->left);
+	free(ast);
+}
+
+void	ft_free_lst(t_list **head)
+{
+	t_list		*tmp;
+
+	while ((*head))
+	{
+		free((*head)->content);
+		tmp = (*head)->next;
+		free((*head));
+		(*head) = tmp;
+	}
+}
+
+void	ft_free_2d(char **ptr)
+{
+	int	i;
+
+	i = 0;
+	while (ptr[i])
+		free(ptr[i++]);
+	free(ptr);
 }

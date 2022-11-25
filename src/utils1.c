@@ -6,7 +6,7 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/23 21:17:24 by adaifi            #+#    #+#             */
-/*   Updated: 2022/11/14 17:20:41 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/21 23:04:24 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ void	input(t_list **arg, t_fds *fds)
 	if (!ft_strcmp((*arg)->content, "<<"))
 	{
 		(*arg) = (*arg)->next;
-		 // => https://stackoverflow.com/questions/70672456/how-here-document-works-in-shell
 		close(her_doc(*arg));
 		tmp = open("/tmp/tmpfile", O_RDONLY, 00777);
 		unlink("/tmp/tmpfile");
@@ -71,40 +70,45 @@ void	output(t_list **arg, t_fds *fds)
 void	pipe_handler(t_fds *fds, t_list *arg, t_env *env, int i)
 {
 	int		j;
-	int		stat;
 
-	stat = 0;
 	j = -1;
 	while (arg && ++j < i)
 	{
+		fds->in = dup(0);
+		fds->out = dup(1);
 		if (j == 0)
-		{
-			fds->in = dup(0);
 			fds->out = dup(fds->fd[(j * 2) + 1]);
-		}
 		else if (j < i && j != i - 1)
 		{
 			fds->out = dup(fds->fd[(j * 2) + 1]);
 			fds->in = dup(fds->fd[(j - 1) * 2]);
 		}
 		else if (j == i - 1)
-		{
 			fds->in = dup(fds->fd[(j - 1) * 2]);
-			fds->out = dup(1);
-		}
 		content_handler(&arg, &env, fds);
 		if (arg && arg->next != NULL)
 			arg = arg->next;
 		close(fds->fd[(j * 2) + 1]);
 	}
+	wait_stat(fds, i);
+}
+
+void	wait_stat(t_fds *fds, int i)
+{
+	int		j;
+	int		stat;
+
+	stat = 0;
 	j = 0;
-	while (j < i)
+	i = 0;
+	while (j < (var.i * 2))
 	{
 		close(fds->fd[j]);
 		j++;
 	}
-	j = 0;
-	while(j <= i)
+	j = 1;
+	waitpid(var.cpid, &stat, 0);
+	while (j <= (var.i))
 	{
 		wait(NULL);
 		j++;

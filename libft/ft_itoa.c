@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_itoa.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mck-d <mck-d@student.42.fr>                +#+  +:+       +#+        */
+/*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/11 00:02:19 by adaifi            #+#    #+#             */
-/*   Updated: 2021/11/25 23:57:05 by mck-d            ###   ########.fr       */
+/*   Updated: 2022/11/22 01:13:38 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ char	*ft_itoa(int n)
 		return (ft_strdup("-2147483648"));
 	str = (char *)malloc(sizeof(char) * (size + 1));
 	if (!str)
-		return (NULL);
+		return (printf("allocation failed"), exit(0), NULL);
 	str[size] = '\0';
 	while (size-- > 0)
 	{

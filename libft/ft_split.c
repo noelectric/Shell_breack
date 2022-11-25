@@ -6,7 +6,7 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/11 00:57:32 by adaifi            #+#    #+#             */
-/*   Updated: 2022/11/16 10:50:45 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/22 01:14:31 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ char	**ft_split(char const *s, char c)
 	j = number_of_str(s, c);
 	tab = (char **) malloc((j + 1) * sizeof (char *));
 	if (!(tab))
-		return (NULL);
+		return (printf("allocation failed"), exit(0), NULL);
 	word_maker(tab, s, j, c);
 	return (tab);
 }

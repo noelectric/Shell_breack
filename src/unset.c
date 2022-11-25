@@ -6,7 +6,7 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 17:01:26 by adaifi            #+#    #+#             */
-/*   Updated: 2022/11/16 21:31:57 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/21 20:56:43 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,17 +32,17 @@ void	unset_env(t_env **env, t_list *arg)
 {
 	t_env	*tmp;
 	t_env	*env_back;
-	char	*str;
 
 	tmp = NULL;
-	str = NULL;
+	if (ft_strcmp(arg->content, "unset"))
+		arg = arg->next->next;
 	while (arg && env)
 	{
-		str = arg->content;
 		env_back = (*env);
-		if (str[0] == '>' || str[0] == '|' || str[0] == '<')
+		if (check(arg) == true)
 			return ;
-		if (ft_multiple_check(str) == 1 && ft_strcmp(&str[0], "_"))
+		if (ft_multiple_check((char *)(arg->content)) == 1 \
+			&& ft_strcmp(&((char *)arg->content)[0], "_"))
 		{
 			var.exit_status = 2;
 			ft_putendl_fd("invalide inditifier", 2);
@@ -69,4 +69,14 @@ void	free_env(t_env *env)
 		env = env_back->next;
 	}
 	free(env);
+}
+
+bool	check(t_list *arg)
+{
+	char	*str;
+
+	str = arg->content;
+	if (str[0] == '>' || str[0] == '|' || str[0] == '<')
+		return (true);
+	return (false);
 }

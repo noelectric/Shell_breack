@@ -6,7 +6,7 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/11 01:36:47 by adaifi            #+#    #+#             */
-/*   Updated: 2021/11/23 03:00:56 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/22 01:15:03 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ char	*ft_strmapi(char const *s, char (*f)(unsigned int, char))
 		return (NULL);
 	str = (char *)malloc(len + 1);
 	if (!str)
-		return (NULL);
+		return (printf("allocation failed"), exit(0), NULL);
 	while (s[i])
 	{
 		str[i] = f(i, s[i]);

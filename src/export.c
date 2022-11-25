@@ -6,7 +6,7 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 17:00:32 by adaifi            #+#    #+#             */
-/*   Updated: 2022/11/16 21:11:16 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/21 17:12:26 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,33 +15,33 @@
 void	export_env(t_env **env, t_list *arg)
 {
 	t_env	*lst;
-	char	*value;
-	char	*key;
+	char	*tmp;
 
 	lst = (*env);
 	ft_sort_env(env);
 	if (arg->next && ft_multiple_check(arg->next->content))
 		return (ft_putendl_fd("Error: not a valid identifier", 2));
+	if (ft_strcmp(arg->content, "export") && arg->next->next)
+		arg = arg->next->next;
 	if (!arg->next || ft_multiple_check(arg->next->content) == 2)
 		return (ft_print_exported(env));
 	while (arg && arg->next)
 	{
 		lst = *env;
-		arg->next->content = ft_strdup(removeChar(arg->next->content));
-		set_env_existed(env, arg, &lst);
-		if ((*env) == NULL)
+		tmp = arg->next->content;
+		arg->next->content = removechar(tmp);
+		free(tmp);
+		if (set_env_existed(env, arg, &lst) && (*env) == NULL)
 		{
-			value = ft_strchr(arg->next->content, '=');
-			key = get_keys(arg->next->content, '=');
 			*env = lst;
-			ft_add_export(key, value, env);
+			ft_add_export(arg->next->content, env);
 		}
 		arg = arg->next;
 	}
 	return ;
 }
 
-void	set_env_existed(t_env **env, t_list *arg, t_env **lst)
+int	set_env_existed(t_env **env, t_list *arg, t_env **lst)
 {
 	t_env	*tmp;
 
@@ -49,9 +49,10 @@ void	set_env_existed(t_env **env, t_list *arg, t_env **lst)
 	if (ft_append(env, arg, lst))
 	{
 		*env = tmp;
-		ft_replace(env, arg, lst);
+		if (ft_replace(env, arg, lst) == 0)
+			return (0);
 	}
-	return ;
+	return (1);
 }
 
 int	ft_append(t_env **env, t_list *arg, t_env **lst)
@@ -65,29 +66,24 @@ int	ft_append(t_env **env, t_list *arg, t_env **lst)
 		s = ft_strchr(arg->next->content, '+');
 		key = get_keys(arg->next->content, '+');
 		if (!key || (ft_multiple_check(key) == 1 && ft_strcmp(key, "_")))
-			return (var.exit_status = 1, ft_putendl_fd("Error: export", 2), 1);
+			return (var.exit_status = 1, free(key),
+				ft_putendl_fd("Error", 2), 1);
 		if (!s)
-			return (1);
+			return (free(key), 1);
 		if (s[0] == '+')
 		{
 			value = s + 2;
-			export_join(env, key, value);
-			if (*env == NULL)
-			{
-				*env = *lst;
-				value = s + 1;
-				ft_add_export(key, value, env);
-				return (0);
-			}
+			export_join(env, arg, key, value);
 			*env = *lst;
-			return (0);
+			return (free(key), 0);
 		}
+		free(key);
 		*env = (*env)->next;
 	}
 	return (0);
 }
 
-void	ft_replace(t_env **env, t_list *arg, t_env **lst)
+int	ft_replace(t_env **env, t_list *arg, t_env **lst)
 {
 	char	*key;
 	char	*value;
@@ -100,25 +96,16 @@ void	ft_replace(t_env **env, t_list *arg, t_env **lst)
 			value = value + 1;
 		if (!ft_strcmp(key, (*env)->key) && value)
 		{
+			free((*env)->value);
 			(*env)->value = ft_strdup(value);
 			*env = *lst;
-			return ;
+			free(key);
+			return (0);
 		}
+		free(key);
 		*env = (*env)->next;
 	}
-}
-
-void	export_join(t_env **env, char *key, char *value)
-{
-	while (*env)
-	{
-		if (!ft_strcmp(key, (*env)->key))
-		{
-			(*env)->value = ft_strjoin((*env)->value, value);
-			break ;
-		}
-		*env = (*env)->next;
-	}
+	return (1);
 }
 
 void	ft_print_exported(t_env **env)
@@ -146,41 +133,4 @@ void	ft_print_exported(t_env **env)
 		tmp = tmp->next;
 	}
 	(*env) = top;
-}
-
-void	ft_sort_env(t_env **env)
-{
-	t_env	*top;
-	t_env	*tmp;
-	int		i;
-
-	tmp = *env;
-	top = *env;
-	while (top)
-	{
-		i = 0;
-		*env = tmp;
-		while (*env)
-		{
-			if (ft_strcmp(top->key, (*env)->key) > 0)
-				i++;
-			*env = (*env)->next;
-		}
-		top->index = i;
-		top = top->next;
-	}
-	*env = tmp;
-	top = tmp;
-}
-
-void	ft_add_export(char *key, char *value, t_env **env)
-{
-	t_env	*lst;
-
-	if (value)
-		value = value + 1;
-	if (ft_multiple_check(key) == 1)
-		return (var.exit_status = 1, ft_putendl_fd("Export : error", 2));
-	lst = ft_lst_new1(key, value);
-	ft_lstadd_back_prime(env, lst);
 }

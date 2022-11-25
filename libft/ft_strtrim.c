@@ -6,7 +6,7 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/11 01:49:06 by adaifi            #+#    #+#             */
-/*   Updated: 2021/11/23 04:14:49 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/22 01:15:09 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ char	*ft_strtrim(char const *s1, char const *set)
 		i--;
 	ptr = (char *)malloc(i + 1);
 	if (!ptr)
-		return (NULL);
+		return (printf("allocation failed"), exit(0), NULL);
 	ptr[i] = '\0';
 	return (ft_memcpy(ptr, s1, i));
 }

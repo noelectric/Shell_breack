@@ -6,7 +6,7 @@
 /*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 16:55:52 by adaifi            #+#    #+#             */
-/*   Updated: 2022/11/16 20:40:01 by adaifi           ###   ########.fr       */
+/*   Updated: 2022/11/20 21:01:40 by adaifi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@ void	cd(t_env *env, t_list *arg)
 	getcwd(oldpwd, 1024);
 	if (!arg->next || ft_multiple_check(arg->next->content) == 2)
 		cd_home(env);
+	if (ft_strcmp(arg->content, "cd") && arg->next->next)
+		arg = arg->next->next;
 	while (arg->next)
 	{
 		if (ft_multiple_check(arg->next->content) == 2)
@@ -85,10 +87,15 @@ void	update_pwd(t_env **lst, char *home)
 		(*lst) = (*lst)->next;
 	}
 	if (!(*lst))
-	{
-		node = ft_lst_new1("PWD", getcwd(pwd, 1024));
-		ft_lstadd_back_prime(&env, node);
-		node = ft_lst_new1("OLDPWD", home);
-		ft_lstadd_back_prime(&env, node);
-	}
+		ft_add_newpwd(env, node, home);
+}
+
+void	ft_add_newpwd(t_env *env, t_env *node, char *home)
+{
+	char	pwd[1024];
+
+	node = ft_lst_new1("PWD", getcwd(pwd, 1024));
+	ft_lstadd_back_prime(&env, node);
+	node = ft_lst_new1("OLDPWD", home);
+	ft_lstadd_back_prime(&env, node);
 }

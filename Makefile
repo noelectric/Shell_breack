@@ -4,8 +4,8 @@ CC= gcc
 
 CFLAGS= -Wall -Wextra -Werror
 
-CFILES = as_tree.c ft_environment.c expand.c loop.c tokenize.c minishell.c shared.c ft_lst_env.c\
-		 pipe.c cd.c cmd_handler.c echo.c env.c export.c her_doc.c path.c pwd.c unset.c utils2.c utils1.c utils.c
+CFILES = as_tree.c ft_environment.c expand.c loop.c tokenize.c minishell.c shared.c ft_lst_env.c export_utils.c pipe_utils.c \
+		 pipe.c cd.c cmd_handler.c echo.c env.c export.c her_doc.c path.c pwd.c unset.c utils2.c utils1.c utils.c expand_utils.c
 
 OFILES = $(addprefix $(OBJ_DIR)/,$(CFILES:.c=.o))
 
@@ -21,10 +21,6 @@ all: $(NAME)
 
 $(NAME) : $(OBJ_DIR) $(OFILES) $(LIBFT)
 	        @$(CC) $(OFILES) $(LIBFT) -L $(shell brew --prefix readline)/lib -lreadline -o  $(NAME)
-		        @echo "minishell ok"
-
-debug : $(OBJ_DIR) $(OFILES) $(LIBFT)
-	        @$(CC) $(OFILES) $(LIBFT) -L $(shell brew --prefix readline)/lib -lreadline -fsanitize=address -o  $(NAME)
 		        @echo "minishell ok"
 
 $(OBJ_DIR):

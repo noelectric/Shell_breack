@@ -1,64 +1,76 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   minishell.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: adaifi <adaifi@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/11/18 15:40:34 by adaifi            #+#    #+#             */
+/*   Updated: 2022/11/22 00:20:04 by adaifi           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../minishell.h"
-
-struct VAR	var;
-
-
-// void	ctrl_c(int sig)
-// {
-// 	(void)sig;
-// 	write(1, "\n", 1);
-// }
-
-// void	back_slash(int sig)
-// {
-// 	printf("Quit\n");
-// 	(void)sig;
-// }
-
-// void sign_handler(int sig)
-// {
-// 	if (sig == SIGQUIT)
-// 	{
-// 		signal(SIGINT, new_prompt);
-// 		signal(SIGQUIT, SIG_IGN);
-// 	}
-// 	if (sig == 2)
-// 	{
-// 		signal(SIGINT, ctrl_c);
-// 		signal(SIGQUIT, back_slash);
-// 	}
-// 	// if (sig == 3)
-// 	// {
-// 	// 	printf("exit\n");
-// 	// 	exit(0);
-// 	// }
-
-// }
 
 void	signal_handler(int sig)
 {
-	(void)sig;
-	write(1, "\n", 1);
-	rl_replace_line("", 0);
-	rl_on_new_line();
-	rl_redisplay();
+	if (sig == 2 && var.id == 0)
+	{
+		printf("\n");
+		rl_on_new_line();
+		rl_replace_line("", 0);
+		rl_redisplay();
+		var.exit_status = 1;
+	}
+	else if (sig == 2 && var.id == 1 && ft_strncmp(var.usr, "./minishell", 11))
+		printf("\n");
+	if (sig == 2 && var.id == 1 && !ft_strcmp(var.usr, "./minishell"))
+		var.exit_status = 130;
+	else if (sig == 3 && var.id == 1 && ft_strcmp(var.usr, "./minishell"))
+	{
+		var.exit_status = 131;
+		printf("Quit: 3\n");
+	}
 }
 
-int main(int argc, char const *argv[], char *envp[])
+bool	free_loop(char *input, t_as *syntax, t_list **chunks, bool st)
 {
-	t_env	*envmap = NULL;
-	t_list	*chunks = NULL;
-	t_as	*syntax = NULL;
-	char	*input = NULL;
-
-	(void)argv;
-	if (argc == 1)
+	if (st == false)
 	{
-		envmap = ft_environment(envp, envmap);
-		signal(SIGINT, signal_handler);
-		signal(SIGQUIT, SIG_IGN);
-		rl_catch_signals = 0;
-		loop(input, chunks, syntax, envmap);
-		return 0;
+		free(input);
+		free(var.usr);
+		return (true);
 	}
+	free(input);
+	free(var.usr);
+	if (syntax)
+		free_ast(syntax);
+	if (*chunks)
+	{
+		ft_lstclear(chunks, free);
+		return (true);
+	}
+	return (true);
+}
+
+int	main(int argc, char const *argv[], char *envp[])
+{
+	t_env	*envmap;
+	t_list	*chunks;
+	t_as	*syntax;
+	char	*input;
+
+	envmap = NULL;
+	chunks = NULL;
+	syntax = NULL;
+	input = NULL;
+	(void)argv;
+	(void)argc;
+	var.id = 0;
+	envmap = ft_environment(envp, envmap);
+	signal(SIGINT, signal_handler);
+	signal(SIGQUIT, signal_handler);
+	rl_catch_signals = 0;
+	loop(input, chunks, syntax, envmap);
+	return (0);
 }
